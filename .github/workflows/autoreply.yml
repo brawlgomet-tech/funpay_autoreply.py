@@ -1,0 +1,25 @@
+name: funpay-autoreply
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+concurrency:
+  group: funpay-autoreply
+  cancel-in-progress: false
+jobs:
+  reply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install requests beautifulsoup4
+      - uses: actions/cache@v4
+        with:
+          path: state.json
+          key: funpay-state-${{ github.run_id }}
+          restore-keys: funpay-state-
+      - run: python funpay_autoreply.py --once
+        env:
+          FUNPAY_GOLDEN_KEY: ${{ secrets.FUNPAY_GOLDEN_KEY }}
